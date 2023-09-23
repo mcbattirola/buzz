@@ -351,10 +351,18 @@ pub const Scanner = struct {
 
     fn binary(self: *Self) Token {
         var peeked: u8 = self.peek();
-        while (peeked == '0' or peeked == '1') {
+        if (peeked == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
+        }
+
+        while (peeked == '0' or peeked == '1' or peeked == '_') {
             _ = self.advance();
 
             peeked = self.peek();
+        }
+
+        if (self.source[self.current.offset - 1] == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
         }
 
         return self.makeToken(
