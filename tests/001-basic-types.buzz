@@ -7,6 +7,16 @@ test "Basic types" {
     bool _ = true;
 }
 
+test "Underscore on number literals" {
+    int a = 100_000;
+
+    assert(a == 100000, message: "Could use a underscore on a int");
+
+    float b = 3.1_4;
+
+    assert(b == 3.14, message: "Could use a underscore on a float");
+}
+
 test "Char literal" {
     int char = 'A';
 
