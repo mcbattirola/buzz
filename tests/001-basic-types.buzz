@@ -18,7 +18,11 @@ test "Underscore on number literals" {
 
     int bin = 0b1_0001;
 
-    assert(bin == 17, message "Clould use an underscore on a binary int");
+    assert(bin == 17, message: "Clould use an underscore on a binary int");
+
+    int h = 0xF_FFF;
+
+    assert(h == 65535, message: "Clould use an underscore on a hex int");
 }
 
 test "Char literal" {

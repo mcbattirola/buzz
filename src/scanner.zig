@@ -381,13 +381,20 @@ pub const Scanner = struct {
     }
 
     fn hexa(self: *Self) Token {
-        _ = self.advance(); // Consume 'x'
+        if (self.peek() == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
+        }
 
+        _ = self.advance(); // Consume 'x'
         var peeked: u8 = self.peek();
-        while (isNumber(peeked) or (peeked >= 'A' and peeked <= 'F') or (peeked >= 'a' and peeked <= 'f')) {
+        while (isNumber(peeked) or (peeked >= 'A' and peeked <= 'F') or (peeked >= 'a' and peeked <= 'f') or peeked == '_') {
             _ = self.advance();
 
             peeked = self.peek();
+        }
+
+        if (self.source[self.current.offset - 1] == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
         }
 
         return self.makeToken(
