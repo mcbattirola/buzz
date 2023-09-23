@@ -253,19 +253,43 @@ pub const Scanner = struct {
     }
 
     fn number(self: *Self) !Token {
-        while (isNumber(self.peek())) {
-            _ = self.advance();
+        std.debug.print("\n\n---reading number----\n", .{});
+        var digit: u8 = self.advance();
+        while (isNumber(self.peek()) or self.peek() == '_') {
+            digit = self.advance();
         }
+
+        if (digit == '_') {
+            return self.makeToken(
+                .Error,
+                "'_' must separate successive digits",
+                null,
+                null,
+            );
+        }
+
+        std.debug.print("at this point, digit is {}, peek is {}\n", .{ digit, self.peek() });
 
         var is_float: bool = false;
         if (self.peek() == '.' and isNumber(self.peekNext())) {
             is_float = true;
             _ = self.advance(); // Consume .
 
-            while (isNumber(self.peek())) {
-                _ = self.advance();
+            while (isNumber(self.peek()) or self.peek() == '_') {
+                digit = self.advance();
+            }
+
+            if (digit == '_') {
+                return self.makeToken(
+                    .Error,
+                    "'_' must separate successive digits",
+                    null,
+                    null,
+                );
             }
         }
+
+        std.debug.print("is float = {}\n", .{is_float});
 
         const float = if (is_float)
             std.fmt.parseFloat(f64, self.source[self.current.start..self.current.offset]) catch {
@@ -279,6 +303,7 @@ pub const Scanner = struct {
         else
             null;
 
+        std.debug.print("val is {s}\n", .{self.source[self.current.start..self.current.offset]});
         const int = if (!is_float)
             std.fmt.parseInt(i32, self.source[self.current.start..self.current.offset], 10) catch {
                 return self.makeToken(
