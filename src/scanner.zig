@@ -253,22 +253,14 @@ pub const Scanner = struct {
     }
 
     fn number(self: *Self) !Token {
-        std.debug.print("\n\n---reading number----\n", .{});
-        var digit: u8 = self.advance();
         while (isNumber(self.peek()) or self.peek() == '_') {
-            digit = self.advance();
+            _ = self.advance();
         }
 
-        if (digit == '_') {
-            return self.makeToken(
-                .Error,
-                "'_' must separate successive digits",
-                null,
-                null,
-            );
+        // make sure last digit is not '_'
+        if (self.peek() == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
         }
-
-        std.debug.print("at this point, digit is {}, peek is {}\n", .{ digit, self.peek() });
 
         var is_float: bool = false;
         if (self.peek() == '.' and isNumber(self.peekNext())) {
@@ -276,20 +268,13 @@ pub const Scanner = struct {
             _ = self.advance(); // Consume .
 
             while (isNumber(self.peek()) or self.peek() == '_') {
-                digit = self.advance();
-            }
-
-            if (digit == '_') {
-                return self.makeToken(
-                    .Error,
-                    "'_' must separate successive digits",
-                    null,
-                    null,
-                );
+                _ = self.advance();
             }
         }
 
-        std.debug.print("is float = {}\n", .{is_float});
+        if (self.peek() == '_') {
+            return self.makeToken(.Error, "'_' must be between digits", null, null);
+        }
 
         const float = if (is_float)
             std.fmt.parseFloat(f64, self.source[self.current.start..self.current.offset]) catch {
@@ -303,7 +288,6 @@ pub const Scanner = struct {
         else
             null;
 
-        std.debug.print("val is {s}\n", .{self.source[self.current.start..self.current.offset]});
         const int = if (!is_float)
             std.fmt.parseInt(i32, self.source[self.current.start..self.current.offset], 10) catch {
                 return self.makeToken(
