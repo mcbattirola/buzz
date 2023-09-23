@@ -253,12 +253,14 @@ pub const Scanner = struct {
     }
 
     fn number(self: *Self) !Token {
-        while (isNumber(self.peek()) or self.peek() == '_') {
+        var peeked: u8 = self.peek();
+        while (isNumber(peeked) or peeked == '_') {
             _ = self.advance();
+
+            peeked = self.peek();
         }
 
-        // make sure last digit is not '_'
-        if (self.peek() == '_') {
+        if (self.source[self.current.offset - 1] == '_') {
             return self.makeToken(.Error, "'_' must be between digits", null, null);
         }
 
@@ -267,12 +269,15 @@ pub const Scanner = struct {
             is_float = true;
             _ = self.advance(); // Consume .
 
-            while (isNumber(self.peek()) or self.peek() == '_') {
+            peeked = self.peek();
+            while (isNumber(peeked) or peeked == '_') {
                 _ = self.advance();
+
+                peeked = self.peek();
             }
         }
 
-        if (self.peek() == '_') {
+        if (self.source[self.current.offset - 1] == '_') {
             return self.makeToken(.Error, "'_' must be between digits", null, null);
         }
 
